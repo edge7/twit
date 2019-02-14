@@ -15,7 +15,8 @@ def replace_weird_chars(input):
         "😉", "").replace("😀", "").replace("🤮", "").replace("🤢", "").replace("°", "").replace("💩", "").replace("⭐",
                                                                                                                    "").replace(
         "😊", "").replace("🌟", ""). \
-        replace("🏆", "").replace("🇮", "").replace("🇹", "").replace("😱", "")
+        replace("🏆", "").replace("🇮", "").replace("🇹", "").replace("😱", "").replace("🤞", "").replace("🤡", "").replace("🤦‍", '').replace("♀", '').\
+        replace("🤦", "")
 
     emoji_pattern = re.compile("["
                                u"\U0001F600-\U0001F64F"  # emoticons
@@ -24,6 +25,7 @@ def replace_weird_chars(input):
                                u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
                                "]+", flags=re.UNICODE)
     message = emoji_pattern.sub(r'', message)
+    message = message.replace("\\xF0\\x9F\\xA4\\x9E", "")
     return message
 
 

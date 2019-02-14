@@ -7,6 +7,8 @@ import tweepy
 
 from api.api import run
 from authentication.auth import get_api_handler
+from constants.rilievo import twitter_pages, facebook_pages
+from facebook.run import go
 from processors.process_tweets import process_source_and_replies
 
 
@@ -30,19 +32,35 @@ def main(page):
         replies.clear()
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser("Sentiment analysis")
-    parser.add_argument("--page", help="page to get feed from", required=True)
-    args = parser.parse_args()
-    pages: List[str] = ['luigidimaio', 'matteosalvinimi']
-    th = threading.Thread(target=run)
-    th.start()
+def start_facebook():
     index = 0
     while True:
         try:
-            index = (index +1)%len(pages)
-            page = pages[index]
+            index = (index + 1) % len(facebook_pages)
+            page = facebook_pages[index]
+            print("\n\n")
+            print("Analysing facebook Page: " + str(page))
+            print("\n\n")
+            go(page)
+        except Exception as e:
+            print(e)
+            sleep(60 * 60)
+
+if __name__ == "__main__":
+    th = threading.Thread(target=run)
+    th.start()
+    facth = threading.Thread(target=start_facebook)
+    facth.start()
+    index = 0
+    while True:
+        try:
+            index = (index +1)%len(twitter_pages)
+            page = twitter_pages[index]
+            print("\n\n")
+            print("Analysing Twitter Page: " + str(page))
+            print("\n\n")
             main(page)
         except Exception as e:
             print(e)
-            sleep(60 * 1)
+            sleep(60 * 15)
+

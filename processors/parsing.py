@@ -48,8 +48,44 @@ def getToFilterFromPage(page):
     raise Exception("Error filtering")
 
 
-def tokenize(comments, message, page):
+def tokenize_post(message, page):
+    language = getLanguageFromPage(page)
+    to_filter = getToFilterFromPage(page)
+    message = message.lower()
+    words_list = []
+    d = {}
 
+    tokenizer = RegexpTokenizer("[\w']+")
+    res = tokenizer.tokenize(message)
+    for r in res:
+        r = r.lower()
+        words_list.insert(0, r)
+        if r in set(stopwords.words(language) + to_filter):
+            continue
+        counter = d.get(r, 0)
+        d[r] = counter + 1
+
+    #print("\n\n Stampo le 4 parole più usate")
+    #for item in sorted(d.items(), key=lambda x: x[1], reverse=True)[0:4]:
+    #    print(item)
+
+    #print(" \n\n Adesso stampo le parole che vanno più a coppia:")
+    filter_stops = lambda w: len(w) < 3 or w in set(stopwords.words(language) + to_filter)
+    bcf = BigramCollocationFinder.from_words(words_list)
+    bcf.apply_word_filter(filter_stops)
+    res_couple = bcf.nbest(BigramAssocMeasures.likelihood_ratio, 10)
+    #print(res_couple)
+
+    tcf = TrigramCollocationFinder.from_words(words_list)
+    tcf.apply_word_filter(filter_stops)
+    tcf.apply_freq_filter(3)
+    res_triple = tcf.nbest(TrigramAssocMeasures.likelihood_ratio, 5)
+    #print(" \n\n Adesso stampo la tripletta di parole più usato insieme:")
+    #print(res_triple)
+
+    return res_couple, sorted(d.items(), key=lambda x: x[1], reverse=True)[0:20], res_triple
+
+def tokenize(comments, message, page):
     language = getLanguageFromPage(page)
     to_filter = getToFilterFromPage(page)
     message = message.lower()
@@ -66,27 +102,24 @@ def tokenize(comments, message, page):
             counter = d.get(r, 0)
             d[r] = counter + 1
 
-    print("\n\n Stampo le 15 parole più usate")
-    for item in sorted(d.items(), key=lambda x: x[1], reverse=True)[0:15]:
-        print(item)
+    # print("\n\n Stampo le 15 parole più usate")
+    # for item in sorted(d.items(), key=lambda x: x[1], reverse=True)[0:15]:
+    #    print(item)
 
-    print(" \n\n Adesso stampo le parole che vanno più a coppia:")
+    # print(" \n\n Adesso stampo le parole che vanno più a coppia:")
     filter_stops = lambda w: len(w) < 3 or w in set(stopwords.words(language) + to_filter)
     bcf = BigramCollocationFinder.from_words(words_list)
     bcf.apply_word_filter(filter_stops)
     res_couple = bcf.nbest(BigramAssocMeasures.likelihood_ratio, 10)
-    print(res_couple)
+    # print(res_couple)
 
     tcf = TrigramCollocationFinder.from_words(words_list)
     tcf.apply_word_filter(filter_stops)
     tcf.apply_freq_filter(3)
     res_triple = tcf.nbest(TrigramAssocMeasures.likelihood_ratio, 5)
-    print(" \n\n Adesso stampo la tripletta di parole più usato insieme:")
-    print(res_triple)
-
-    print("\n\n ***** post successivo \n\n\n\ ")
 
     return res_couple, sorted(d.items(), key=lambda x: x[1], reverse=True)[0:20], res_triple
+
 
 def get_hashtags(comments):
     d = {}
@@ -94,8 +127,9 @@ def get_hashtags(comments):
         res = re.findall(r"#(\w+)", com.lower())
         for j in res:
             v = d.get(j, 0)
-            d[j] = v +1
+            d[j] = v + 1
     return sorted(d.items(), key=lambda x: x[1], reverse=True)[0:20]
+
 
 def get_comment_most_liked(replies):
     comment = ""
