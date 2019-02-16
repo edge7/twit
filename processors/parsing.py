@@ -6,6 +6,8 @@ from nltk.metrics import TrigramAssocMeasures
 from nltk.tokenize import RegexpTokenizer
 import re
 
+from DB.utility import show_tables, get_posts, insert_post_analisi
+
 to_filter_generic_ita = ['ciao', 'de', 'fa', 'cosa', 'così', 'solo', 'facebook', 'www', 'ora',
                          'https', 'poi', 'un\'altra',
                          'ancora', 'italiani', 'infatti', 'fare', 'mai', 'proprio', 'fatto', 'ciao', 'sempre', 'italia',
@@ -94,6 +96,7 @@ def tokenize(comments, message, page):
     for line in comments:
         tokenizer = RegexpTokenizer("[\w']+")
         res = tokenizer.tokenize(line)
+        res = [x for x in res if len(x) > 2]
         for r in res:
             r = r.lower()
             words_list.insert(0, r)
@@ -139,3 +142,56 @@ def get_comment_most_liked(replies):
             num = r.favorite_count
             comment = r.full_text
     return comment, num
+
+def analyse_post():
+    for db in ['twitter', 'facebook']:
+        tables = show_tables(db=db)
+        for table in tables:
+            try:
+                posts = get_posts(table, db)
+            except:
+                print("Skipping Table " + table)
+            if len(posts) < 5:
+                continue
+            posts = [x[0] for x in posts]
+            couple, word_used_more, triple = tokenize(posts, table, table)
+            if not word_used_more:
+                continue
+            first_word_used = word_used_more[0][0]
+            first_word_used_count = word_used_more[0][1]
+            s_word_used = word_used_more[1][0]
+            s_word_used_count = word_used_more[1][1]
+            t_word_used = word_used_more[2][0]
+            t_word_used_count = word_used_more[2][1]
+
+            try:
+                first_couple_used = couple[0][0] + ' | ' + couple[0][1]
+            except Exception:
+                first_couple_used = None
+            try:
+                second_couple_used = couple[1][0] + ' | ' + couple[1][1]
+            except:
+                second_couple_used = None
+            try:
+                third_couple_used = couple[2][0] + ' | ' + couple[2][1]
+            except:
+                third_couple_used = None
+
+            try:
+                first_triplette_used = triple[0][0] + '|' + triple[0][1] + "|" + triple[0][2]
+            except:
+                first_triplette_used = None
+
+            try:
+                second_triplette_used = triple[1][0] + '|' + triple[1][1] + "|" + triple[1][2]
+            except:
+                second_triplette_used = None
+
+            try:
+                third_triplette_used = triple[2][0] + '|' + triple[2][1] + "|" + triple[2][2]
+            except:
+                third_triplette_used = None
+            insert_post_analisi(table, db, first_word_used, s_word_used, t_word_used,
+                                first_word_used_count, s_word_used_count, t_word_used_count,
+                                first_couple_used, second_couple_used, third_couple_used, first_triplette_used, second_triplette_used)
+

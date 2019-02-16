@@ -1,3 +1,7 @@
+from time import sleep
+import logging
+
+logger = logging.getLogger(__name__)
 import requests
 from dateutil import parser
 
@@ -24,9 +28,6 @@ def get_summary_comment(comment_id):
     return n_comments, n_likes
 
 
-
-
-
 def process(id_post, c_time, message, page, n_shares, n_comments, n_likes):
     c_time = parser.parse(c_time)
     comment_most_likes = ""
@@ -34,20 +35,30 @@ def process(id_post, c_time, message, page, n_shares, n_comments, n_likes):
     max_comments_comment = 0
     comment_most_comments = ""
 
-    message = replace_weird_chars(message)
-    url = 'https://graph.facebook.com/{}/{}/comments'.format(graph_api_version, id_post)
+    def get_delay(n):
+        return 0.5
 
+    message = replace_weird_chars(message)
+    url = 'https://graph.facebook.com/{}/{}/comments?summary=1&filter=toplevel'.format(graph_api_version, id_post)
+    delay = get_delay(n_comments)
+    logger.info("#Comments: " + str(n_comments))
+    logger.info("Delay is: "+ str(delay))
     comments = []
 
     # set limit to 0 to try to download all comments
-    limit: int = 0
+    limit: int = 500
 
     r = requests.get(url, params={'access_token': access_token})
+    j = 0
     while True:
         data = r.json()
 
         # catch errors returned by the Graph API
         if 'error' in data:
+            print("Limit error when asking comments")
+            if len(comments) > 100:
+                logger.warning("Skipping error as I have enough comments")
+                break
             raise Exception(data['error']['message'])
 
         # append the text of each comment into the comments list
@@ -55,7 +66,18 @@ def process(id_post, c_time, message, page, n_shares, n_comments, n_likes):
             text = comment['message'].replace('\n', ' ')
             text = replace_weird_chars(text)
             id_comment = comment["id"]
-            n_comments_, n_likes_ = get_summary_comment(id_comment)
+            try:
+                j = j+1
+                if j < 51:
+                    n_comments_, n_likes_ = get_summary_comment(id_comment)
+                else:
+                    n_comments_ = n_likes_ = 0
+
+            except Exception as e:
+                logger.warning(str(e))
+                if len(comments) > 100:
+                    logger.warning("Skipping error as I have enough comments (get summary)")
+                    break
             if n_comments_ > max_comments_comment:
                 comment_most_comments = text
                 max_comments_comment = n_comments_
@@ -67,6 +89,13 @@ def process(id_post, c_time, message, page, n_shares, n_comments, n_likes):
         # check if there are more comments
         if 'paging' in data and 'next' in data['paging']:
             r = requests.get(data['paging']['next'])
+            logger.info("Facebook sleeping: " + str(len(comments)))
+            at = len(comments) / n_comments
+            at = at * 100.0
+            logger.info("scaricati " + str(at))
+            logger.info("Post: " + message)
+            logger.info("#Commenti: " + str(n_comments))
+            sleep(60 * delay)
         else:
             break
 
@@ -128,15 +157,15 @@ def process(id_post, c_time, message, page, n_shares, n_comments, n_likes):
     topic = None
     sentiment = None
     insertFacebook(page, id_post, message, c_time, first_word_used, first_word_used_count,
-                     s_word_used, s_word_used_count, t_word_used,
-                     t_word_used_count, forth_word_used,
-                     forth_word_used_count,
-                     fiveth_word_used, fiveth_word_used_count,
-                     first_couple_used,
-                     second_couple_used, third_couple_used,
-                     first_triplette_used,
-                     second_triplette_used, third_triplette_used, n_comments, n_likes,
-                     first_hashtag_used, first_hashtag_used_count, second_hashtag_used,
-                     second_hashtag_used_count,
-                     comment_most_likes, max_likes_comment, sentiment, topic
-                     )
+                   s_word_used, s_word_used_count, t_word_used,
+                   t_word_used_count, forth_word_used,
+                   forth_word_used_count,
+                   fiveth_word_used, fiveth_word_used_count,
+                   first_couple_used,
+                   second_couple_used, third_couple_used,
+                   first_triplette_used,
+                   second_triplette_used, third_triplette_used, n_comments, n_likes,
+                   first_hashtag_used, first_hashtag_used_count, second_hashtag_used,
+                   second_hashtag_used_count,
+                   comment_most_likes, max_likes_comment, sentiment, topic
+                   )

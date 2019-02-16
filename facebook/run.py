@@ -1,5 +1,10 @@
+import logging
+logger = logging.getLogger(__name__)
+import datetime
+from DB.utility import check_in_db_facebook
 from facebook.facebook_access import graph_api_version, access_token
 import requests
+from dateutil import parser
 
 from facebook.process import process
 
@@ -23,24 +28,34 @@ def get_summary(post_id):
 Analyse page timeline
 """
 def go(page):
-
     url = 'https://graph.facebook.com/{}/{}/posts'.format(graph_api_version, page)
     r = requests.get(url, params={'access_token': access_token})
     while True:
         data = r.json()
         if 'error' in data:
-            print("Got facebook limit")
+            logger.warning("Got facebook limit when asking posts (before comments)")
             raise Exception("Limit")
 
         for d in data['data']:
             if 'message' not in d:
                 continue
-
+            created_at = parser.parse(d['created_time']).replace(tzinfo=None)
+            delta = datetime.datetime.today() - created_at
+            delta_hours = delta.total_seconds() / (60*60)
+            if delta_hours < 5:
+                logger.info("Skipping message, as it is too fresh")
+                continue
+            if not check_in_db_facebook(id, page):
+                logger.info("Skipping Facebook")
+                continue
             # Get High level summary
             n_shares, n_comments, n_likes = get_summary(d['id'])
 
             # Process and store
             process(d['id'], d['created_time'], d['message'], page, n_shares, n_comments, n_likes)
+
+            # Quit after 1 post
+            return
 
         # check if there are more post
         if 'paging' in data and 'next' in data['paging']:

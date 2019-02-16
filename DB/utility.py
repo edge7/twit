@@ -1,6 +1,9 @@
 import MySQLdb
+import logging
 
-from DB.schema import schema
+logger = logging.getLogger(__name__)
+
+from DB.schema import schema, schema_facebook
 
 
 def insert(table,
@@ -66,7 +69,7 @@ def insert(table,
         print(title)
         print(comment_with_most_likes)
         conn.rollback()
-
+    logger.info("Twitter has done: " + str(table))
     conn.close()
 
 
@@ -94,7 +97,11 @@ def get_nulls(table, db='twitter'):
     x = conn.cursor()
     x.execute(query)
     res = x.fetchall()
-    schema_list = [x.replace(" ", "") for x in schema.split(",")]
+    if db == 'twitter':
+        sc = schema
+    else:
+        sc = schema_facebook
+    schema_list = [x.replace(" ", "") for x in sc.split(",")]
     to_return = []
     for row in res:
         d = {'page': table}
@@ -117,23 +124,23 @@ def update_db(data):
                            db=db, use_unicode=True
                            )
     if db == 'twitter':
-        query = "UPDATE " + table + " SET topic = " + "'" + topic + "'" + " WHERE id_source_twit = " + id
+        query = "UPDATE " + table + " SET topic = " + "'" + topic + "'" + " WHERE id_source_twit = " + "'" + id + "'"
     else:
-        query = "UPDATE " + table + " SET topic = " + "'" + topic + "'" + " WHERE id = " + id
+        query = "UPDATE " + table + " SET topic = " + "'" + topic + "'" + " WHERE id = " + "'" + id + "'"
     x = conn.cursor()
     x.execute(query)
 
     if db == 'twitter':
-        query = "UPDATE " + table + " SET comment_sentiment = " + "'" + sentiment + "'" + " WHERE id_source_twit = " + id
+        query = "UPDATE " + table + " SET comment_sentiment = " + "'" + sentiment + "'" + " WHERE id_source_twit = " + "'" + id + "'"
     else:
-        query = "UPDATE " + table + " SET comment_sentiment = " + "'" + sentiment + "'" + " WHERE id = " + id
+        query = "UPDATE " + table + " SET comment_sentiment = " + "'" + sentiment + "'" + " WHERE id = " + "'" + id + "'"
     x = conn.cursor()
     x.execute(query)
     try:
         conn.commit()
     except Exception as e:
-        print("ERROR DB ")
-        print(e)
+        logger.error("ERROR DB ")
+        logger.error(e)
         conn.rollback()
     conn.close()
 
@@ -158,7 +165,7 @@ def insertFacebook(table, id_post, message, c_time, first_word_most_used_in_comm
                            db="facebook", use_unicode=True
                            )
     table = table.replace(".", "")
-
+    table = 'facebook_' + table
     id_post = str(id_post)
     x = conn.cursor()
     x.execute("SET NAMES utf8mb4;")  # or utf8 or any other charset you want to handle
@@ -200,5 +207,119 @@ def insertFacebook(table, id_post, message, c_time, first_word_most_used_in_comm
         print(message)
         print(comment_with_most_likes)
         conn.rollback()
-    print("Facebook done!")
+    logger.info("Facebook done! " + str(table))
+    conn.close()
+
+
+def check_in_db_twitter(source_twit, table):
+    conn = MySQLdb.connect(host="localhost",
+                           user="enrico",
+                           passwd="quaglia", init_command="set names utf8",
+                           db="twitter", use_unicode=True
+                           )
+    table = table.replace(".", "")
+    id_post = str(source_twit.id)
+    x = conn.cursor()
+    x.execute("SET NAMES utf8mb4;")  # or utf8 or any other charset you want to handle
+
+    x.execute("SET CHARACTER SET utf8mb4;")  # same as above
+
+    x.execute("SET character_set_connection=utf8mb4;")
+
+    query_check = "SELECT num_reply_post, topic FROM " + table + " where id_source_twit=\"" + id_post + "\""
+
+    x.execute(query_check)
+    try:
+        res = x.fetchall()[0]
+    except:
+        return True
+
+    if res[0] < 100 and res[1] is None:
+        return True
+
+
+    return False
+
+
+def check_in_db_facebook(id, table):
+    conn = MySQLdb.connect(host="localhost",
+                           user="enrico",
+                           passwd="quaglia", init_command="set names utf8",
+                           db="facebook", use_unicode=True
+                           )
+    table = 'facebook_' + table
+    table = table.replace(".", "")
+    id_post = str(id)
+    x = conn.cursor()
+    x.execute("SET NAMES utf8mb4;")  # or utf8 or any other charset you want to handle
+
+    x.execute("SET CHARACTER SET utf8mb4;")  # same as above
+
+    x.execute("SET character_set_connection=utf8mb4;")
+
+    query_check = "SELECT num_likes_post FROM " + table + " where id=\"" + id_post + "\""
+
+    x.execute(query_check)
+    try:
+        res = x.fetchall()[0]
+    except:
+        return True
+
+    if res[0] < 200:
+        return True
+    return False
+
+
+def get_posts(table, db):
+    conn = MySQLdb.connect(host="localhost",
+                           user="enrico",
+                           passwd="quaglia", init_command="set names utf8",
+                           db=db, use_unicode=True
+                           )
+    table = table.replace(".", "")
+    x = conn.cursor()
+    query = 'Select title from ' + table
+    x.execute(query)
+    return x.fetchall()
+
+
+def insert_post_analisi(page, db, first_word_used, s_word_used, t_word_used,
+                        first_word_used_count, s_word_used_count, t_word_used_count,
+                        first_couple_used, second_couple_used, third_couple_used, first_triplette_used,
+                        second_triplette_used):
+    conn = MySQLdb.connect(host="localhost",
+                           user="enrico",
+                           passwd="quaglia", init_command="set names utf8",
+                           db=db, use_unicode=True
+                           )
+    table = "postanalisi"
+    x = conn.cursor()
+    x.execute("SET NAMES utf8mb4;")  # or utf8 or any other charset you want to handle
+    x.execute("SET CHARACTER SET utf8mb4;")  # same as above
+    x.execute("SET character_set_connection=utf8mb4;")
+
+    query_check = "SELECT count(*) FROM " + table + " where pagina=\"" + page + "\""
+
+    x.execute(query_check)
+    res = x.fetchall()[0]
+
+    if res[0] != 0:
+        x.execute("delete from " + table + " where pagina=\"" + page + "\"")
+        conn.commit()
+
+    try:
+        ret = x.execute(" INSERT INTO " + table + """ VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                  )""", (
+            page, first_word_used, s_word_used, t_word_used,
+            first_word_used_count, s_word_used_count, t_word_used_count,
+            first_couple_used, second_couple_used, third_couple_used, first_triplette_used,
+            second_triplette_used
+        ))
+        conn.commit()
+    except Exception as e:
+        print("ERROR DB ")
+        print(e)
+
+        conn.rollback()
+    logger.info("Post Analisi Done! " + str(page))
     conn.close()

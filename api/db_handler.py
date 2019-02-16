@@ -39,7 +39,12 @@ def return_all():
     count = 0
     to_return = []
     for i in tables:
-        res = get_nulls(i, db=db)
+        try:
+            res = get_nulls(i, db=db)
+        except:
+            continue
+        if not res:
+            continue
         res = api_version(res, db)
         to_return += res
         count += len(res)
