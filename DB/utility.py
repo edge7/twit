@@ -123,6 +123,7 @@ def update_db(data):
     id = str(data['id'])
     sentiment = str(data['sent'])
     topic = data['topic']
+    loc = data['luogo']
     conn = MySQLdb.connect(host="localhost",
                            user="enrico",
                            passwd="quaglia", init_command="set names utf8",
@@ -139,6 +140,13 @@ def update_db(data):
         query = "UPDATE " + table + " SET comment_sentiment = " + "'" + sentiment + "'" + " WHERE id_source_twit = " + "'" + id + "'"
     else:
         query = "UPDATE " + table + " SET comment_sentiment = " + "'" + sentiment + "'" + " WHERE id = " + "'" + id + "'"
+    x = conn.cursor()
+    x.execute(query)
+
+    if db == 'twitter':
+        query = "UPDATE " + table + " SET luogo = " + "'" + loc + "'" + " WHERE id_source_twit = " + "'" + id + "'"
+    else:
+        query = "UPDATE " + table + " SET luogo = " + "'" + loc + "'" + " WHERE id = " + "'" + id + "'"
     x = conn.cursor()
     x.execute(query)
     try:
