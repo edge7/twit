@@ -47,7 +47,7 @@ def process(id_post, c_time, message, page, n_shares, n_comments, n_likes):
 
     # set limit to 0 to try to download all comments
     limit: int = 500
-
+    best_comments = []
     r = requests.get(url, params={'access_token': access_token})
     j = 0
     while True:
@@ -70,20 +70,14 @@ def process(id_post, c_time, message, page, n_shares, n_comments, n_likes):
                 j = j+1
                 if j < 51:
                     n_comments_, n_likes_ = get_summary_comment(id_comment)
-                else:
-                    n_comments_ = n_likes_ = 0
+                    best_comments.append((text, n_likes_, n_comments_))
 
             except Exception as e:
                 logger.warning(str(e))
                 if len(comments) > 100:
                     logger.warning("Skipping error as I have enough comments (get summary)")
                     break
-            if n_comments_ > max_comments_comment:
-                comment_most_comments = text
-                max_comments_comment = n_comments_
-            if n_likes_ > max_likes_comment:
-                comment_most_likes = text
-                max_likes_comment = n_likes_
+
             comments.append(text)
 
         # check if there are more comments
@@ -158,6 +152,7 @@ def process(id_post, c_time, message, page, n_shares, n_comments, n_likes):
         second_hashtag_used = None
     topic = None
     sentiment = None
+    best_comments = sorted(best_comments, key=lambda x : x[1], reverse=True)[0:3]
     insertFacebook(page, id_post, message, c_time, first_word_used, first_word_used_count,
                    s_word_used, s_word_used_count, t_word_used,
                    t_word_used_count, forth_word_used,
@@ -169,5 +164,6 @@ def process(id_post, c_time, message, page, n_shares, n_comments, n_likes):
                    second_triplette_used, third_triplette_used, n_comments, n_likes,
                    first_hashtag_used, first_hashtag_used_count, second_hashtag_used,
                    second_hashtag_used_count,
-                   comment_most_likes, max_likes_comment, sentiment, topic
+                   best_comments[0][0], best_comments[0][1], sentiment, topic,
+                   best_comments[1][0], best_comments[1][1], best_comments[2][0], best_comments[2][1]
                    )

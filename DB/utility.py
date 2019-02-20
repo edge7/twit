@@ -19,7 +19,7 @@ def insert(table,
            num_retweet_post,
            first_hashtag_most_used, first_hashtag_most_used_count, second_hashtag_most_used,
            second_hashtag_most_used_count,
-           comment_with_most_likes, likes_to_most_comment, comment_sentiment, topic):
+           comment_with_most_likes, likes_to_most_comment, comment_sentiment, topic, comm_2, comm_2_likes, comm_3, comm_3_likes):
     table = table.replace(".", "")
     conn = MySQLdb.connect(host="localhost",
                            user="enrico",
@@ -46,7 +46,7 @@ def insert(table,
 
     try:
         ret = x.execute(" INSERT INTO " + table + """ VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s  )""", (
+        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s  )""", (
             id_source_twit, title, time, first_word_most_used_in_comments, first_word_most_used_in_comments_count,
             second_word_most_used_in_comments, second_word_most_used_in_comments_count,
             third_word_most_used_in_comments,
@@ -60,7 +60,7 @@ def insert(table,
             num_retweet_post,
             first_hashtag_most_used, first_hashtag_most_used_count, second_hashtag_most_used,
             second_hashtag_most_used_count,
-            comment_with_most_likes, likes_to_most_comment, comment_sentiment, topic
+            comment_with_most_likes, likes_to_most_comment, comment_sentiment, topic, comm_2, comm_2_likes, comm_3, comm_3_likes
         ))
         conn.commit()
     except Exception as e:
@@ -158,7 +158,8 @@ def insertFacebook(table, id_post, message, c_time, first_word_most_used_in_comm
                    third_3_words_most_used_in_comments, num_reply_post, num_likes_post,
                    first_hashtag_most_used, first_hashtag_most_used_count, second_hashtag_most_used,
                    second_hashtag_most_used_count,
-                   comment_with_most_likes, likes_to_most_comment, sentiment, topic):
+                   comment_with_most_likes, likes_to_most_comment, sentiment, topic, sec_comment, sec_comment_likes,
+                   third_comment, third_comment_likes):
     conn = MySQLdb.connect(host="localhost",
                            user="enrico",
                            passwd="quaglia", init_command="set names utf8",
@@ -185,7 +186,7 @@ def insertFacebook(table, id_post, message, c_time, first_word_most_used_in_comm
 
     try:
         ret = x.execute(" INSERT INTO " + table + """ VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s  )""", (
+            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s  )""", (
             id_post, message, c_time, first_word_most_used_in_comments, first_word_most_used_in_comments_count,
             second_word_most_used_in_comments, second_word_most_used_in_comments_count,
             third_word_most_used_in_comments,
@@ -198,7 +199,7 @@ def insertFacebook(table, id_post, message, c_time, first_word_most_used_in_comm
             second_3_words_most_used_in_comments, third_3_words_most_used_in_comments, num_reply_post, num_likes_post,
             first_hashtag_most_used, first_hashtag_most_used_count, second_hashtag_most_used,
             second_hashtag_most_used_count,
-            comment_with_most_likes, likes_to_most_comment, sentiment, topic
+            comment_with_most_likes, likes_to_most_comment, sentiment, topic, sec_comment, sec_comment_likes, third_comment, third_comment_likes
         ))
         conn.commit()
     except Exception as e:

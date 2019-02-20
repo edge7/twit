@@ -25,6 +25,8 @@ def api_version(res, db):
         d['tripla'] = j['first_3_words_most_used_in_comments']
         d['ht'] = j['first_hashtag_most_used']
         d['commlikes'] = j['comment_with_most_likes']
+        d['sec_com'] = j['second_comment']
+        d['third_com'] = j['third_comment']
         d['db'] = db
         to_return.append(d)
     return to_return

@@ -1,5 +1,5 @@
 from DB.utility import insert
-from processors.parsing import tokenize, get_hashtags, get_comment_most_liked
+from processors.parsing import tokenize, get_hashtags, get_comments_most_liked
 import re
 
 
@@ -26,6 +26,13 @@ def replace_weird_chars(input):
                                "]+", flags=re.UNICODE)
     message = emoji_pattern.sub(r'', message)
     message = message.replace("\\xF0\\x9F\\xA4\\x9E", "")
+    message = message.replace("\\xF0\\x9F\\xA4\\x94", "")
+    myre = re.compile('('
+                      '\ud83c[\udf00-\udfff]|'
+                      '\ud83d[\udc00-\ude4f\ude80-\udeff]|'
+                      '[\u2600-\u26FF\u2700-\u27BF])+'.decode('unicode_escape'),
+                      re.UNICODE)
+    message = myre.sub(r'', message)
     return message
 
 
@@ -91,8 +98,9 @@ def process_source_and_replies(source, replies, page):
         second_hashtag_used_count = 0
         second_hashtag_used = None
 
-    comment, num = get_comment_most_liked(replies)
-    comment = replace_weird_chars(comment)
+    comments_cool = get_comments_most_liked(replies)
+    comments_cool = sorted(comments_cool, key=lambda x:x[1], reverse=True)[0:3]
+    comments_cool = [(replace_weird_chars(x[0]), x[1]) for x in comments_cool]
     comment_sentiment = None
     topic = None
 
@@ -112,5 +120,5 @@ def process_source_and_replies(source, replies, page):
            num_retweet_post,
            first_hashtag_used, first_hashtag_used_count, second_hashtag_used,
            second_hashtag_used_count,
-           comment, num, comment_sentiment, topic)
-    print("inserted")
+           comments_cool[0][0], comments_cool[0][1], comment_sentiment, topic,
+           comments_cool[1][0], comments_cool[1][1], comments_cool[2][0], comments_cool[2][1])
