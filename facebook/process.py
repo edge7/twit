@@ -36,13 +36,13 @@ def process(id_post, c_time, message, page, n_shares, n_comments, n_likes):
     comment_most_comments = ""
 
     def get_delay(n):
-        return 0.5
+        return 0.4
 
     message = replace_weird_chars(message)
     url = 'https://graph.facebook.com/{}/{}/comments?summary=1&filter=toplevel'.format(graph_api_version, id_post)
     delay = get_delay(n_comments)
-    logger.info("#Comments: " + str(n_comments))
-    logger.info("Delay is: "+ str(delay))
+    #logger.info("#Comments: " + str(n_comments))
+    #logger.info("Delay is: "+ str(delay))
     comments = []
 
     # set limit to 0 to try to download all comments
@@ -89,13 +89,15 @@ def process(id_post, c_time, message, page, n_shares, n_comments, n_likes):
         # check if there are more comments
         if 'paging' in data and 'next' in data['paging']:
             r = requests.get(data['paging']['next'])
-            logger.info("Facebook sleeping: " + str(len(comments)))
+
             at = len(comments) / n_comments
             at = at * 100.0
-            logger.info("scaricati " + str(at))
-            logger.info("Post: " + message)
-            logger.info("#Commenti: " + str(n_comments))
-            sleep(60 * delay)
+            if at > 100 or at < 0:
+                logger.info("Facebook sleeping: " + str(len(comments)))
+                logger.info("scaricati " + str(at))
+                logger.info("Post: " + message)
+                logger.info("#Commenti: " + str(n_comments) + "\n\n")
+            sleep(int(60 * delay))
         else:
             break
 

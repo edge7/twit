@@ -69,7 +69,7 @@ def insert(table,
         print(title)
         print(comment_with_most_likes)
         conn.rollback()
-    logger.info("Twitter has done: " + str(table))
+    logger.info("Twitter has done: " + str(table) + " POST: " + str(title))
     conn.close()
 
 
@@ -207,7 +207,7 @@ def insertFacebook(table, id_post, message, c_time, first_word_most_used_in_comm
         print(message)
         print(comment_with_most_likes)
         conn.rollback()
-    logger.info("Facebook done! " + str(table))
+    logger.info("Facebook done! " + str(table) + " POST: " + str(message))
     conn.close()
 
 
@@ -257,7 +257,7 @@ def check_in_db_facebook(id, table):
 
     x.execute("SET character_set_connection=utf8mb4;")
 
-    query_check = "SELECT num_likes_post FROM " + table + " where id=\"" + id_post + "\""
+    query_check = "SELECT num_reply_post, topic FROM " + table + " where id=\"" + id_post + "\""
 
     x.execute(query_check)
     try:
@@ -265,7 +265,7 @@ def check_in_db_facebook(id, table):
     except:
         return True
 
-    if res[0] < 200:
+    if res[0] < 200 and res[1] is None:
         return True
     return False
 
@@ -293,6 +293,8 @@ def insert_post_analisi(page, db, first_word_used, s_word_used, t_word_used,
                            db=db, use_unicode=True
                            )
     table = "postanalisi"
+    if db == 'facebook':
+        table = db + "_" + table
     x = conn.cursor()
     x.execute("SET NAMES utf8mb4;")  # or utf8 or any other charset you want to handle
     x.execute("SET CHARACTER SET utf8mb4;")  # same as above
@@ -321,5 +323,6 @@ def insert_post_analisi(page, db, first_word_used, s_word_used, t_word_used,
         print(e)
 
         conn.rollback()
-    logger.info("Post Analisi Done! " + str(page))
+    #logger.info("Post Analisi Done! " + str(page))
     conn.close()
+

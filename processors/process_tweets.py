@@ -14,9 +14,9 @@ def replace_weird_chars(input):
                                                                                                                   "").replace(
         "😉", "").replace("😀", "").replace("🤮", "").replace("🤢", "").replace("°", "").replace("💩", "").replace("⭐",
                                                                                                                    "").replace(
-        "😊", "").replace("🌟", ""). \
+        "😊", "").replace("🌟", "").replace("🥑", "").replace("🥒", "").replace("🥥", '').\
         replace("🏆", "").replace("🇮", "").replace("🇹", "").replace("😱", "").replace("🤞", "").replace("🤡", "").replace("🤦‍", '').replace("♀", '').\
-        replace("🤦", "")
+        replace("🤦", "").replace("▶", "").replace("⛏", "").replace("⛏️", "").replace("☺","").replace("🤣🥂", "").replace("🥂", "").replace("🤣", "")
 
     emoji_pattern = re.compile("["
                                u"\U0001F600-\U0001F64F"  # emoticons

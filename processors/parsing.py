@@ -67,25 +67,26 @@ def tokenize_post(message, page):
         counter = d.get(r, 0)
         d[r] = counter + 1
 
-    #print("\n\n Stampo le 4 parole più usate")
-    #for item in sorted(d.items(), key=lambda x: x[1], reverse=True)[0:4]:
+    # print("\n\n Stampo le 4 parole più usate")
+    # for item in sorted(d.items(), key=lambda x: x[1], reverse=True)[0:4]:
     #    print(item)
 
-    #print(" \n\n Adesso stampo le parole che vanno più a coppia:")
+    # print(" \n\n Adesso stampo le parole che vanno più a coppia:")
     filter_stops = lambda w: len(w) < 3 or w in set(stopwords.words(language) + to_filter)
     bcf = BigramCollocationFinder.from_words(words_list)
     bcf.apply_word_filter(filter_stops)
     res_couple = bcf.nbest(BigramAssocMeasures.likelihood_ratio, 10)
-    #print(res_couple)
+    # print(res_couple)
 
     tcf = TrigramCollocationFinder.from_words(words_list)
     tcf.apply_word_filter(filter_stops)
     tcf.apply_freq_filter(3)
     res_triple = tcf.nbest(TrigramAssocMeasures.likelihood_ratio, 5)
-    #print(" \n\n Adesso stampo la tripletta di parole più usato insieme:")
-    #print(res_triple)
+    # print(" \n\n Adesso stampo la tripletta di parole più usato insieme:")
+    # print(res_triple)
 
     return res_couple, sorted(d.items(), key=lambda x: x[1], reverse=True)[0:20], res_triple
+
 
 def tokenize(comments, message, page):
     language = getLanguageFromPage(page)
@@ -143,6 +144,7 @@ def get_comment_most_liked(replies):
             comment = r.full_text
     return comment, num
 
+
 def analyse_post():
     for db in ['twitter', 'facebook']:
         tables = show_tables(db=db)
@@ -150,7 +152,8 @@ def analyse_post():
             try:
                 posts = get_posts(table, db)
             except:
-                print("Skipping Table " + table)
+                #print("Skipping Table " + table)
+                continue
             if len(posts) < 5:
                 continue
             posts = [x[0] for x in posts]
@@ -193,5 +196,5 @@ def analyse_post():
                 third_triplette_used = None
             insert_post_analisi(table, db, first_word_used, s_word_used, t_word_used,
                                 first_word_used_count, s_word_used_count, t_word_used_count,
-                                first_couple_used, second_couple_used, third_couple_used, first_triplette_used, second_triplette_used)
-
+                                first_couple_used, second_couple_used, third_couple_used, first_triplette_used,
+                                second_triplette_used)

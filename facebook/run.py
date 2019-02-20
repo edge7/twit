@@ -43,10 +43,10 @@ def go(page):
             delta = datetime.datetime.today() - created_at
             delta_hours = delta.total_seconds() / (60*60)
             if delta_hours < 5:
-                logger.info("Skipping message, as it is too fresh")
+                #logger.info("Skipping message, as it is too fresh")
                 continue
-            if not check_in_db_facebook(id, page):
-                logger.info("Skipping Facebook")
+            if not check_in_db_facebook(d['id'], page):
+                #logger.info("Skipping Facebook post as already parsed")
                 continue
             # Get High level summary
             n_shares, n_comments, n_likes = get_summary(d['id'])
