@@ -30,8 +30,8 @@ def replace_weird_chars(input):
     myre = re.compile('('
                       '\ud83c[\udf00-\udfff]|'
                       '\ud83d[\udc00-\ude4f\ude80-\udeff]|'
-                      '[\u2600-\u26FF\u2700-\u27BF])+'.decode('unicode_escape'),
-                      re.UNICODE)
+                      '[\u2600-\u26FF\u2700-\u27BF])+',
+                      flags= re.UNICODE)
     message = myre.sub(r'', message)
     return message
 

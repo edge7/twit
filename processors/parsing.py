@@ -136,15 +136,8 @@ def get_hashtags(comments):
 
 
 def get_comments_most_liked(replies):
-    comment = ""
-    num = 0
     replies = sorted([(r.full_text, r.favorite_count) for r in replies], key= lambda x: x[1], reverse=True)[0:3]
     return replies
-    for r in replies:
-        if num <= r.favorite_count:
-            num = r.favorite_count
-            comment = r.full_text
-    return comment, num
 
 
 def analyse_post():
