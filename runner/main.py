@@ -1,11 +1,11 @@
 import datetime
 import threading
-import time
 from time import sleep
 import logging
 from logging.config import fileConfig
 from os import path
 
+from facebook.facebook_access import access_token
 
 log_file_path = path.join(path.dirname(path.abspath(__file__)), 'logging_config.ini')
 logging.config.fileConfig(log_file_path)
@@ -34,7 +34,7 @@ def twitter_go(page):
             continue
 
         delta = (datetime.datetime.today() - source_twit.created_at).total_seconds() / (60 * 60)
-        if delta < 5:
+        if delta < 8:
             #logger.info("Skipping Twitter message, as it is too fresh")
             continue
         if not check_in_db_twitter(source_twit, page):
@@ -66,30 +66,34 @@ def twitter_go(page):
 
 def start_facebook():
     index = 0
+    index_token = -1
     while True:
 
         try:
             index = (index + 1) % len(facebook_pages)
+            index_token = (index_token+1) % (len(access_token))
             page = facebook_pages[index]
             logger.info("Facebook: Analysing " + str(page))
-            go(page)
+            go(page, index_token)
             #logger.info("Calling post analisi")
             analyse_post()
             #logger.info("Post Analisi done")
             #logger.info("Facebook sleeping per 15 mins")
 
-            sleep(60 * 15)
+            sleep(60 * 10)
         except Exception as e:
             logger.error("Got Error Facebook back here in main loop pages sleeping")
             logger.error(e)
-            sleep(60 * 60)
+            sleep(60 * 20)
 
 
 if __name__ == "__main__":
+    # Starting Facebook and API RUNNER
     th = threading.Thread(target=run)
     th.start()
     facth = threading.Thread(target=start_facebook)
     facth.start()
+    # Twitter loop
     index = 0
     while True:
         try:

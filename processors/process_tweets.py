@@ -16,7 +16,8 @@ def replace_weird_chars(input):
                                                                                                                    "").replace(
         "😊", "").replace("🌟", "").replace("🥑", "").replace("🥒", "").replace("🥥", '').\
         replace("🏆", "").replace("🇮", "").replace("🇹", "").replace("😱", "").replace("🤞", "").replace("🤡", "").replace("🤦‍", '').replace("♀", '').\
-        replace("🤦", "").replace("▶", "").replace("⛏", "").replace("⛏️", "").replace("☺","").replace("🤣🥂", "").replace("🥂", "").replace("🤣", "")
+        replace("🤦", "").replace("▶", "").replace("⛏", "").replace("⛏️", "").replace("☺","").replace("🤣🥂", "").replace("🥂", "").replace("🤣", "").replace("🦅", '').\
+        replace("🤗", '')
 
     emoji_pattern = re.compile("["
                                u"\U0001F600-\U0001F64F"  # emoticons
@@ -33,6 +34,13 @@ def replace_weird_chars(input):
                       '[\u2600-\u26FF\u2700-\u27BF])+',
                       flags= re.UNICODE)
     message = myre.sub(r'', message)
+    RE_EMOJI = re.compile('[\U00010000-\U0010ffff]', flags=re.UNICODE)
+    message = RE_EMOJI.sub(r'', message)
+
+    emoji_pattern = re.compile("["
+                               u"\U0001F929-\U0001F930"  # emoticons
+                               "]+", flags=re.UNICODE)
+    message = emoji_pattern.sub(r'', message)
     return message
 
 

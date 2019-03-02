@@ -12,7 +12,7 @@ from facebook.process import process
 def get_summary(post_id):
     url = 'https://graph.facebook.com/{}/{}/?fields=shares,likes.summary(true),comments.summary(true)'. \
         format(graph_api_version, post_id)
-    r = requests.get(url, params={'access_token': access_token})
+    r = requests.get(url, params={'access_token': access_token[0]})
     data = r.json()
 
     if 'error' in data:
@@ -27,9 +27,10 @@ def get_summary(post_id):
 """
 Analyse page timeline
 """
-def go(page):
+def go(page, index):
     url = 'https://graph.facebook.com/{}/{}/posts'.format(graph_api_version, page)
-    r = requests.get(url, params={'access_token': access_token})
+
+    r = requests.get(url, params={'access_token': access_token[index]})
     while True:
         data = r.json()
         if 'error' in data:
@@ -52,7 +53,7 @@ def go(page):
             n_shares, n_comments, n_likes = get_summary(d['id'])
 
             # Process and store
-            process(d['id'], d['created_time'], d['message'], page, n_shares, n_comments, n_likes)
+            process(d['id'], d['created_time'], d['message'], page, n_shares, n_comments, n_likes, index_token=index)
 
             # Quit after 1 post
             return

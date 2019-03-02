@@ -11,10 +11,10 @@ from processors.parsing import tokenize, tokenize_post, get_hashtags
 from processors.process_tweets import replace_weird_chars
 
 
-def get_summary_comment(comment_id):
+def get_summary_comment(comment_id, index):
     url = 'https://graph.facebook.com/{}/{}/?fields=likes.summary(true),comments.summary(true)'. \
         format(graph_api_version, comment_id)
-    r = requests.get(url, params={'access_token': access_token})
+    r = requests.get(url, params={'access_token': access_token[index]})
     data = r.json()
     if 'error' in data:
         raise Exception(data['error']['message'])
@@ -28,15 +28,12 @@ def get_summary_comment(comment_id):
     return n_comments, n_likes
 
 
-def process(id_post, c_time, message, page, n_shares, n_comments, n_likes):
+def process(id_post, c_time, message, page, n_shares, n_comments, n_likes, index_token):
     c_time = parser.parse(c_time)
-    comment_most_likes = ""
-    max_likes_comment = 0
-    max_comments_comment = 0
-    comment_most_comments = ""
+
 
     def get_delay(n):
-        return 0.4
+        return 0.3
 
     message = replace_weird_chars(message)
     url = 'https://graph.facebook.com/{}/{}/comments?summary=1&filter=toplevel'.format(graph_api_version, id_post)
@@ -45,10 +42,8 @@ def process(id_post, c_time, message, page, n_shares, n_comments, n_likes):
     #logger.info("Delay is: "+ str(delay))
     comments = []
 
-    # set limit to 0 to try to download all comments
-    limit: int = 500
     best_comments = []
-    r = requests.get(url, params={'access_token': access_token})
+    r = requests.get(url, params={'access_token': access_token[index_token]})
     j = 0
     while True:
         data = r.json()
@@ -56,7 +51,7 @@ def process(id_post, c_time, message, page, n_shares, n_comments, n_likes):
         # catch errors returned by the Graph API
         if 'error' in data:
             print("Limit error when asking comments")
-            if len(comments) > 100:
+            if len(comments) > 1000:
                 logger.warning("Skipping error as I have enough comments")
                 break
             raise Exception(data['error']['message'])
@@ -69,12 +64,12 @@ def process(id_post, c_time, message, page, n_shares, n_comments, n_likes):
             try:
                 j = j+1
                 if j < 51:
-                    n_comments_, n_likes_ = get_summary_comment(id_comment)
+                    n_comments_, n_likes_ = get_summary_comment(id_comment, index_token)
                     best_comments.append((text, n_likes_, n_comments_))
 
             except Exception as e:
                 logger.warning(str(e))
-                if len(comments) > 100:
+                if len(comments) > 1000:
                     logger.warning("Skipping error as I have enough comments (get summary)")
                     break
 

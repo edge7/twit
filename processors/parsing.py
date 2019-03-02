@@ -13,7 +13,7 @@ to_filter_generic_ita = ['ciao', 'de', 'fa', 'cosa', 'così', 'solo', 'facebook'
                          'ancora', 'italiani', 'infatti', 'fare', 'mai', 'proprio', 'fatto', 'ciao', 'sempre', 'italia',
                          'e\'',
                          'navi', 'ministro', 'italia', 'x', 'php', 'story', 'facebook', 'story_fbid', 'youtube',
-                         'popolo',
+                         'popolo', 'più',
                          'italiano', 'già', 'è', 'analisi',
                          'essere', 'prima', 'senza', 'caso', 'dice', 'oggi', 'te', 'due', 'perche', 'quando'
                          ]

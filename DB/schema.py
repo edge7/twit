@@ -12,7 +12,7 @@ schema = "id_source_twit, title, time, first_word_most_used_in_comments,first_wo
             first_hashtag_most_used, first_hashtag_most_used_count, second_hashtag_most_used,\
             second_hashtag_most_used_count,\
             comment_with_most_likes, likes_to_most_comment, comment_sentiment, topic, second_comment," \
-         "second_comment_likes, third_comment, third_comment_likes"
+         "second_comment_likes, third_comment, third_comment_likes, luogo"
 
 
 schema_facebook = "id, title, time, first_word_most_used_in_comments,first_word_most_used_in_comments_count,\
@@ -28,4 +28,4 @@ schema_facebook = "id, title, time, first_word_most_used_in_comments,first_word_
             first_hashtag_most_used, first_hashtag_most_used_count, second_hashtag_most_used,\
             second_hashtag_most_used_count,\
             comment_with_most_likes, likes_to_most_comment, comment_sentiment, topic, second_comment," \
-         "second_comment_likes, third_comment, third_comment_likes"
+         "second_comment_likes, third_comment, third_comment_likes, luogo"
